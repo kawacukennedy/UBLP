@@ -116,28 +116,43 @@ Ports:
 3004 — Committee
 customs-broker does not open a port — it is a one-shot demo script. In production, this role is handled by the customs broker's own system.
 
-Environment Variables
+## Environment Variables
+
 All services run with zero config in development mode. For production:
 
-Ministry (ministry/.env)
+### Ministry (`ministry/.env`)
+
+```env
 # Private key encryption — if unset, stored as plaintext (development only!)
 MINISTRY_KEY_PASSPHRASE=strong-passphrase-here
 
 # Optional
 MINISTRY_DID=did:ublp:ministry
 COMMITTEE_URL=http://localhost:3004
-Committee (committee/.env)
+```
+
+### Committee (`committee/.env`)
+
+```env
 # BLS private key encryption — if unset, stored as plaintext (development only!)
 COMMITTEE_KEY_PASSPHRASE=strong-passphrase-here
 
 # Optional
 COMMITTEE_PORT=3004
-UBLP Agent (ublp-agent/.env)
+```
+
+### UBLP Agent (`ublp-agent/.env`)
+
+```env
 # Optional
 AGENT_DID=did:ublp:agent:default
 L2_VERIFIER_URL=http://localhost:3003
 COMMITTEE_URL=http://localhost:3004
-L2 Verifier (l2-verifier-mock/.env)
+```
+
+### L2 Verifier (`l2-verifier-mock/.env`)
+
+```env
 # dev (default): accepts mock-ecdsa-p256
 # sp1: accepts only sp1-groth16 / sp1-plonk
 PROOF_MODE=dev
@@ -145,99 +160,139 @@ PROOF_MODE=dev
 # Optional
 MINISTRY_URL=http://localhost:3001
 COMMITTEE_URL=http://localhost:3004
-Customs Broker (customs-broker/.env)
+```
+
+### Customs Broker (`customs-broker/.env`)
+
+```env
 # Optional — defaults work for development
 MINISTRY_URL=http://localhost:3001
 UBLP_AGENT_URL=http://localhost:3002
 
 # Carrier DID embedded in document — must match agent's AGENT_DID
 AGENT_DID=did:ublp:agent:default
-SP1 (For real ZK proving — optional)
+```
+
+### SP1 (For real ZK proving — optional)
+
+```env
 # Succinct Prover Network
 SP1_PROVER_NETWORK_KEY=<succinct-api-key>
 SP1_PROVER_URL=https://rpc.succinct.xyz
 
 # ELF generated after "cargo prove build" in sp1-circuit/
 SP1_ELF_PATH=sp1-circuit/elf/ublp-verifier
-If SP1 env is not set, the system automatically falls back to mock mode.
+```
 
-API Reference
-Ministry — POST /api/approve
+> If SP1 env is not set, the system automatically falls back to mock mode.
+
+---
+
+## API Reference
+
+### Ministry — `POST /api/approve`
+
+```json
 {
   "documentId": "DOC-uuid",
   "holderDid": "did:ublp:agent:default",
-  "exporterName": "ACME Logistics Ltd.",
-  "..."
+  "exporterName": "ACME Logistics Ltd."
 }
-Returns: UBLPVerifiableCredential
+```
 
-UBLP Agent — POST /api/process
+Returns: `UBLPVerifiableCredential`
+
+### UBLP Agent — `POST /api/process`
+
+```json
 {
   "verifiableCredential": { "..." }
 }
-Returns: { presentation: UBLPVerifiablePresentation, l2Result: L2SettleResponse }
+```
 
-L2 Verifier — GET /api/records
-Returns: L2SettleRecord[]
+Returns: `{ presentation: UBLPVerifiablePresentation, l2Result: L2SettleResponse }`
 
-L2 Verifier — POST /api/revoke-key
+### L2 Verifier — `GET /api/records`
+
+Returns: `L2SettleRecord[]`
+
+### L2 Verifier — `POST /api/revoke-key`
+
+```json
 {
   "ministryPublicKey": "-----BEGIN PUBLIC KEY-----...",
   "compromisedAt": "2024-01-15T10:00:00.000Z"
 }
-compromisedAt is optional. If omitted, the key is rejected from this point forward; past records are unaffected.
+```
 
-L2 Verifier — POST /api/sync
+`compromisedAt` is optional. If omitted, key is rejected from this point forward; past records unaffected.
+
+### L2 Verifier — `POST /api/sync`
+
 Refreshes ministry and committee data (use if a service restarts).
 
-ZK Circuit (SP1)
-sp1-circuit/src/main.rs
-Private inputs (not exposed to L2):
+---
 
-ministry_signature — P-256 ECDSA, 64 byte IEEE P1363
-ministry_pub_key_raw — uncompressed SEC1, 65 byte
-document_hash — SHA256("ublp-doc-v1:" + canonicalJson), 32 byte
-document_id_hash — 32 byte
-holder_signature — P-256 ECDSA, 64 byte — holder privacy
-holder_pub_key_raw — uncompressed SEC1, 65 byte
-holder_did — UTF-8 bytes
-Public outputs (verified by L2):
+## ZK Circuit (SP1)
 
-document_hash — document fingerprint
-ministry_pub_key_hash — SHA256(ministry raw key)
-document_id_hash — replay protection
-holder_pub_key_hash — holder identity proof; hash only, not raw key
-Circuit build (requires Rust + SP1 toolchain):
+`sp1-circuit/src/main.rs`
 
+**Private inputs (not exposed to L2):**
+1. `ministry_signature` — P-256 ECDSA, 64 byte IEEE P1363
+2. `ministry_pub_key_raw` — uncompressed SEC1, 65 byte
+3. `document_hash` — SHA256("ublp-doc-v1:" + canonicalJson), 32 byte
+4. `document_id_hash` — 32 byte
+5. `holder_signature` — P-256 ECDSA, 64 byte — holder privacy
+6. `holder_pub_key_raw` — uncompressed SEC1, 65 byte
+7. `holder_did` — UTF-8 bytes
+
+**Public outputs (verified by L2):**
+- `document_hash` — document fingerprint
+- `ministry_pub_key_hash` — SHA256(ministry raw key)
+- `document_id_hash` — replay protection
+- `holder_pub_key_hash` — holder identity proof; hash only, not raw key
+
+**Circuit build (requires Rust + SP1 toolchain):**
+
+```bash
 cd sp1-circuit
 cargo prove build
-Security Model
-Risk	Protection
-Ministry monopoly	BLS t-of-n committee; 2/3 threshold
-Holder identity leak	Holder sig is ZK private input; L2 only sees holderPubKeyHash
-Document content leak	rawDocument excluded from VP; document content consumed inside circuit
-Replay attack	documentIdHash unique constraint on L2
-Key compromise	Timestamped revocation; only settledAt >= compromisedAt flagged SUSPICIOUS
-Proof downgrade	PROOF_MODE set server-side via L2 env; not client-controlled
-Key at rest	Ministry + Committee: AES-256-GCM + PBKDF2
-v0.2 Roadmap
-not done
-BLS threshold verify → inside SP1 circuit (single Groth16 verify on L2)
-not done
-groupKeyHash as dynamic public input (committee rotation without circuit rebuild)
-not done
-PostgreSQL + Redis (replace settled.json flat-file)
-not done
-Binary calldata format (ABI-encoded instead of W3C JSON — gas savings)
-not done
-SP1 proof recursion + EIP-4844 blob batching (10x throughput)
-not done
-Agent key at rest encryption
-not done
-mTLS / API key authentication between services
-License
+```
+
+---
+
+## Security Model
+
+| Risk | Protection |
+|------|------------|
+| Ministry monopoly | BLS t-of-n committee; 2/3 threshold |
+| Holder identity leak | Holder sig is ZK private input; L2 only sees `holderPubKeyHash` |
+| Document content leak | `rawDocument` excluded from VP; content consumed inside circuit |
+| Replay attack | `documentIdHash` unique constraint on L2 |
+| Key compromise | Timestamped revocation; only `settledAt >= compromisedAt` flagged SUSPICIOUS |
+| Proof downgrade | `PROOF_MODE` set server-side; not client-controlled |
+| Key at rest | Ministry + Committee: AES-256-GCM + PBKDF2 |
+
+---
+
+## v0.2 Roadmap
+
+- [ ] BLS threshold verify → inside SP1 circuit (single Groth16 verify on L2)
+- [ ] `groupKeyHash` as dynamic public input (committee rotation without circuit rebuild)
+- [ ] PostgreSQL + Redis (replace `settled.json` flat-file)
+- [ ] Binary calldata format (ABI-encoded instead of W3C JSON — gas savings)
+- [ ] SP1 proof recursion + EIP-4844 blob batching (10x throughput)
+- [ ] Agent key at rest encryption
+- [ ] mTLS / API key authentication between services
+
+---
+
+## License
+
 Apache 2.0 — Patent grant included. Commercial use unrestricted, no copyleft, no source disclosure required for modifications.
 
-Ecosystem: ekacin/UBLP
+---
 
-Efe Kaan Açin
+**Ecosystem:** [ekacin/UBLP](https://github.com/ekacin/UBLP)
+
+*Efe Kaan Açin*
