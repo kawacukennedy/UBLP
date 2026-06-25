@@ -8,11 +8,14 @@ Secures customs documents using ZK proofs, BLS threshold signatures, and W3C Ver
 ---
 ## Why UBLP?
 ### Structural Vulnerabilities in Current Customs Systems
-**Centralized approval → single point of failure.** A customs declaration passes through a single chain of authority. This binds every approval step to the judgment — and integrity — of the individual at that step. Systemic oversight is replaced by personal trust.
-**No audit trail.** Who approved it, when, and on what grounds? Rejection reasons are not required to be recorded. The audit log lives on paper or in closed systems — independent third parties cannot verify it. Accountability after the fact is structurally difficult.
-**No document integrity guarantee.** There is no independent layer verifying that the document in circulation after ministry approval is identical to the one that was signed. If content is altered post-approval, the current system has no mechanism to detect it.
-**Multiple actors, zero coordination guarantee.** Customs broker, ministry, carrier, committee — each runs its own system. There is no shared cryptographic foundation to verify data consistency between them.
-**Trust is built on intent, not math.** Current systems rely on the good faith of institutions and individuals. UBLP's proposition: move trust to cryptographic verification and immutable records. Low-risk, compliant shipments clear automatically — human oversight focuses on genuinely high-risk cases.
+**Bureaucratic corruption risk.** Customs administrations are structurally exposed to integrity risks: document approval is a manual process, no open audit trail exists, and rejection reasons are not required to be documented. Every day of shipping delay is a direct cost to the exporter — making the pressure mechanism self-executing.
+
+**Bureaucratic bottleneck.** Long approval chains, a human at every step — multiple opportunities for delay, data entry error, and manipulation. A significant portion of this time is not actual customs processing but approval queues.
+
+**Lack of transparency.** Who signed it? Under what authority? These answers are often inaccessible to the parties involved. The audit trail lives on paper or in closed systems — third parties cannot verify it.
+
+**Trust mechanism is fundamentally misaligned.** Current systems rely on the good faith of institutions and individuals. UBLP's proposition: move trust to cryptographic verification and immutable records. Low-risk, compliant shipments clear automatically — human oversight focuses on genuinely high-risk cases.
+
 ### UBLP's Approach
 | Problem | UBLP Solution |
 |---------|---------------|
@@ -237,4 +240,4 @@ Apache 2.0 — Patent grant included. Commercial use unrestricted, no copyleft, 
 
 Ecosystem: ekacin/UBLP
 
-Efe Kaan Açın — acinefekaan@gmail.com
+Efe Kaan Açin
