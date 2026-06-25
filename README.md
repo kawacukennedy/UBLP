@@ -26,8 +26,15 @@ npm run dev
 
 ---
 
+## Katkıda Bulunanlar
+
+| | |
+|---|---|
+| **Efe Kaan Açın** | Mimar, geliştirici — [acinefekaan@gmail.com](mailto:acinefekaan@gmail.com) |
+| **Claude (Anthropic)** | ZK devre tasarımı, kriptografi danışmanlığı, güvenlik denetimi |
+
+---
+
 ## Lisans
 
 Apache 2.0 — bkz. [LICENSE](./LICENSE)
-
-*Efe Kaan Açın — [acinefekaan@gmail.com](mailto:acinefekaan@gmail.com)*
