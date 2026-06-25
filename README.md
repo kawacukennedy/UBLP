@@ -27,7 +27,7 @@ npm run dev
 ## Contributors
 | | |
 |---|---|
-| **Efe Kaan Açın** | Architect, developer — [acinefekaan@gmail.com](mailto:acinefekaan@gmail.com) |
+| **Efe Kaan Açin** | Architect, developer |
 | **Claude (Anthropic)** | ZK circuit design, cryptography advisory, security audit |
 ---
 ## License
