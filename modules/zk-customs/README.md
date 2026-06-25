@@ -1,108 +1,86 @@
-# UBLP · ZK Gümrük Doğrulama Modülü
-
-> **[UBLP Ekosistemi](https://github.com/ekacin/UBLP) → `modules/zk-customs`**
+# UBLP · ZK Customs Clearance Module
+> **[UBLP Ecosystem](https://github.com/ekacin/UBLP) → `modules/zk-customs`**
 >
-> Bu depo UBLP'nin Zero-Knowledge gümrük doğrulama modülünü içerir.
-> UBLP, lojistik süreçlerini uçtan uca kriptografik güvence altına alan çok modüllü bir protokoldür.
-
+> This repository contains the Zero-Knowledge customs verification module of UBLP.
+> UBLP is a multi-module protocol for end-to-end cryptographic security across logistics processes.
 **Zero-Knowledge customs clearance over a mock L2 settlement layer.**
-
-Gümrük belgelerini ZK kanıtı, BLS eşik imzası ve W3C Verifiable Credentials ile güvence altına alır. Bakanlık ECDSA imzası, nakliyeci ZK kanıtı, kurul BLS imzası — üçü L2'de tek doğrulama noktasında birleşir.
-
+Secures customs documents using ZK proofs, BLS threshold signatures, and W3C Verifiable Credentials. Ministry ECDSA signature, carrier ZK proof, committee BLS signature — all three converge at a single L2 verification point.
 ---
-
-## Neden UBLP?
-
-### Mevcut Gümrük Sisteminin Sorunları
-
-**Memur rüşveti.** Gümrük idareleri, Transparency International raporlarında küresel ölçekte en yüksek rüşvet riskli kurumlar arasında gösterilmektedir. Nedeni yapısaldır: belge onayı elle yapılan bir muamele, açık bir audit trail yok, ret gerekçesi yazılı tutulmak zorunda değil. "Ücret" ödenirse süreç hızlanır, ödenmezse belge takılır. Nakliye süresindeki her gün ihracatçıya doğrudan maliyet olduğu için baskı mekanizması otomatik işler.
-
-**Bürokratik darboğaz.** Uzun imza zinciri, her adımda insan — gecikme, veri giriş hatası ve manipülasyon için birden fazla fırsat. Dünya Bankası verilerine göre bu sürenin büyük bölümü fiilî gümrük işlemi değil, onay kuyruğudur.
-
-**Şeffaflık yokluğu.** Kim imzaladı? Hangi yetkiyle? Bu soruların cevabı çoğu zaman erişilemez. Denetim izi kâğıt ya da kapalı sistemde — üçüncü taraflar doğrulayamaz.
-
-**Güven mekanizması yanlış kurulu.** Mevcut sistemde güven, kurumların ve kişilerin niyetine dayanır. UBLP'nin önerisi farklı: güven kriptografik doğrulamaya ve değiştirilemez kayıtlara taşınır. Düşük riskli, belgeleri uyumlu sevkiyatlar otomatik geçer
-
-### UBLP'nin Yaklaşımı
-
-| Sorun | UBLP Karşılığı |
-|-------|----------------|
-| Tek yetkili = tek yozlaşma noktası | BLS t-of-n: 2/3 kurul imzası olmadan onay geçmez |
-| "Belge mi imzalandı?" doğrulanamaz | ZK circuit: SHA256(belge) ↔ ministry sig matematiksel bağ |
-| Sahte belge fark edilmez | `document_hash` L2'de immutable — sonradan değiştirilse ZK doğrulaması başarısız |
-| Holder kimliği cleartext | Holder kimlik gizliliği: holder sig ZK private input, L2 yalnızca `holderPubKeyHash` görür |
-| Anahtar ele geçirilirse geçmiş tehlikede | Timestamped revocation: yalnızca `settledAt >= compromisedAt` SUSPICIOUS |
-| Kimin onayladığı belirsiz | `groupKeyHash` + `signerIds` → hangi kurul üyelerinin imzaladığı kayıt altında |
-
-UBLP, bakanlık onayından sonraki aşamada — nakliye, kurul onayları ve sınır geçişlerinde — verinin manipüle edilmesini ve çoklu aktörler arasındaki yozlaşma zincirini yapısal olarak imkânsız kılar. Bakanlığın ilk onayı hâlâ insan kararına dayanır; UBLP bu aşamayı değil, onayın verilmesinden sonra gerçekleşebilecek her türlü müdahaleyi kriptografik güvence altına alır. Tek bir kurul üyesi imzalasa onay geçmez; bakanlık onayından sonra belgede değişiklik yapılsa ZK doğrulaması kırılır.
-
+## Why UBLP?
+### Structural Vulnerabilities in Current Customs Systems
+**Centralized approval → single point of failure.** A customs declaration passes through a single chain of authority. This binds every approval step to the judgment — and integrity — of the individual at that step. Systemic oversight is replaced by personal trust.
+**No audit trail.** Who approved it, when, and on what grounds? Rejection reasons are not required to be recorded. The audit log lives on paper or in closed systems — independent third parties cannot verify it. Accountability after the fact is structurally difficult.
+**No document integrity guarantee.** There is no independent layer verifying that the document in circulation after ministry approval is identical to the one that was signed. If content is altered post-approval, the current system has no mechanism to detect it.
+**Multiple actors, zero coordination guarantee.** Customs broker, ministry, carrier, committee — each runs its own system. There is no shared cryptographic foundation to verify data consistency between them.
+**Trust is built on intent, not math.** Current systems rely on the good faith of institutions and individuals. UBLP's proposition: move trust to cryptographic verification and immutable records. Low-risk, compliant shipments clear automatically — human oversight focuses on genuinely high-risk cases.
+### UBLP's Approach
+| Problem | UBLP Solution |
+|---------|---------------|
+| Single authority = single corruption point | BLS t-of-n: approval requires 2/3 committee signatures |
+| "Was the document signed?" cannot be verified | ZK circuit: SHA256(document) ↔ ministry sig — mathematical binding |
+| Forged documents go undetected | `document_hash` immutable on L2 — any post-approval change breaks ZK verification |
+| Holder identity exposed | Holder privacy: holder sig is ZK private input, L2 only sees `holderPubKeyHash` |
+| Compromised key endangers past records | Timestamped revocation: only `settledAt >= compromisedAt` flagged SUSPICIOUS |
+| Who approved is unclear | `groupKeyHash` + `signerIds` → which committee members signed is on record |
+UBLP makes data manipulation structurally impossible in the post-approval phase — during transport, committee signing, and border crossing. The ministry's initial approval still relies on human judgment; UBLP does not replace that decision, it cryptographically secures everything that follows. A single committee member's signature is insufficient; any document change after ministry approval breaks ZK verification.
 ---
-
-## Mimari
-
-### Rol Tanımları
-
-| Servis | Gerçek Dünya Karşılığı | Rol |
-|--------|------------------------|-----|
-| `customs-broker` | Gümrük müşaviri | Belgeyi hazırlar, nakliyeciye iletir — demo istemcisi |
-| `ministry` | Gümrük Bakanlığı | Belgeyi inceler, ECDSA ile imzalar, VC düzenler |
-| `ublp-agent` | Nakliyeci / taşıyıcı firma | VC'yi alır, ZK kanıtı üretir, kurul onayı alır, L2'ye sunar |
-| `committee` | Akredite kurul (ör. ihracatçılar birliği) | ZK doğrular, BLS eşik imzası atar |
-| `l2-verifier-mock` | L2 zinciri | BLS + ZK doğrular, belgeyi settle eder |
-
-### Akış
-
-```
+## Architecture
+### Role Definitions
+| Service | Real-World Counterpart | Role |
+|---------|------------------------|------|
+| `customs-broker` | Customs broker | Prepares document, forwards to carrier — demo client |
+| `ministry` | Customs Ministry | Reviews document, signs with ECDSA, issues VC |
+| `ublp-agent` | Carrier / freight forwarder | Receives VC, generates ZK proof, obtains committee attestation, submits to L2 |
+| `committee` | Accredited committee (e.g. exporters' union) | Verifies ZK proof, applies BLS threshold signature |
+| `l2-verifier-mock` | L2 chain | Verifies BLS + ZK, settles document |
+### Flow
 ┌──────────────────────────┐
-│  Gümrük Müşaviri         │  Belgeyi hazırlar. holderDid = nakliyeci DID.
-│  (customs-broker)        │
+│ Customs Broker │ Prepares document. holderDid = carrier DID.
+│ (customs-broker) │
 └────────┬─────────────────┘
-         │ 1. POST /api/approve  { belge + holderDid }
-         ▼
+│ 1. POST /api/approve { document + holderDid }
+▼
 ┌─────────────────────┐
-│  Ministry  :3001    │  EC P-256 ECDSA imzalar. VC düzenler.
-│  (Bakanlık)         │  AES-256-GCM key at rest.
+│ Ministry :3001 │ Signs with EC P-256 ECDSA. Issues VC.
+│ │ AES-256-GCM key at rest.
 └────────┬────────────┘
-         │ Verifiable Credential (imzalı)
-         ▼ (müşavir VC'yi nakliyeciye iletir)
-         │ 2. POST /api/process  { verifiableCredential }
-         ▼
+│ Verifiable Credential (signed)
+▼ (broker forwards VC to carrier)
+│ 2. POST /api/process { verifiableCredential }
+▼
 ┌─────────────────────┐
-│  UBLP Agent :3002   │  1. VC imzasını doğrula
-│  (Nakliyeci)        │  2. Holder ECDSA sig üret (ZK private input — holder kimlik gizliliği)
-│                     │  3. ZK Proof üret (mock: ECDSA, prod: SP1 Groth16)
-│                     │  4. ZK kanıtını Kurul'a sun (ham belge gitmez)
+│ UBLP Agent :3002 │ 1. Verify VC signature
+│ (Carrier) │ 2. Generate holder ECDSA sig (ZK private input — holder privacy)
+│ │ 3. Generate ZK Proof (mock: ECDSA, prod: SP1 Groth16)
+│ │ 4. Submit ZK proof to Committee (raw document never sent)
 └────────┬────────────┘
-         │ 3. POST /api/attest  { proofBytes, publicValues }
-         ▼
+│ 3. POST /api/attest { proofBytes, publicValues }
+▼
 ┌─────────────────────┐
-│  Committee  :3004   │  ZK proof verify eder → matematiksel ikna.
-│  (Kurul)            │  BLS12-381 t-of-n imzalar (eşik: 2/3).
-│  3 üye, eşik 2/3    │  AES-256-GCM key at rest.
+│ Committee :3004 │ Verifies ZK proof → mathematical conviction.
+│ │ BLS12-381 t-of-n sign (threshold: 2/3).
+│ 3 members, 2/3 │ AES-256-GCM key at rest.
 └────────┬────────────┘
-         │ BLS aggregate attestation
-         ▼
+│ BLS aggregate attestation
+▼
 ┌─────────────────────┐
-│  UBLP Agent :3002   │  Verifiable Presentation oluşturur.
+│ UBLP Agent :3002 │ Builds Verifiable Presentation.
 └────────┬────────────┘
-         │ 4. POST /api/verify-and-settle  { VP }
-         ▼
+│ 4. POST /api/verify-and-settle { VP }
+▼
 ┌─────────────────────┐
-│  L2 Verifier :3003  │  1. Whitelist + revocation check
-│  (L2 Katmanı)       │  2. BLS threshold verify (bağımsız)
-│                     │  3. ZK proof verify (bağımsız)
-│                     │  4. Replay dedup (documentIdHash)
+│ L2 Verifier :3003 │ 1. Whitelist + revocation check
+│ (L2 Layer) │ 2. BLS threshold verify (independent)
+│ │ 3. ZK proof verify (independent)
+│ │ 4. Replay dedup (documentIdHash)
 └─────────────────────┘
-         │
-    settled.json  (ONAYLANDI / SUSPICIOUS)
-```
+│
+settled.json (APPROVED / SUSPICIOUS)
 
 ---
-
-## Teknoloji
-
-| Katman | Teknoloji |
-|--------|-----------|
+## Technology Stack
+| Layer | Technology |
+|-------|------------|
 | ZK Proof | [SP1 zkVM](https://github.com/succinctlabs/sp1) (RISC-V, Groth16/PLONK) |
 | Threshold Sig | BLS12-381 G1, `@noble/bls12-381` |
 | Identity | EC P-256 ECDSA, IEEE P1363, SPKI PEM |
@@ -111,203 +89,152 @@ UBLP, bakanlık onayından sonraki aşamada — nakliye, kurul onayları ve sın
 | Key security | AES-256-GCM + PBKDF2 |
 | Runtime | Node.js 20+, TypeScript, Fastify |
 | Circuit | Rust (`no_std`, `sp1-zkvm`) |
-
 ---
-
-## Hızlı Başlangıç
-
-### Gereksinimler
-
+## Quick Start
+### Requirements
 - Node.js 20+
 - npm 10+
-
 ```bash
 git clone https://github.com/ekacin/UBLP.git
 cd UBLP/modules/zk-customs
 npm install
 npm run dev
 ```
+npm run dev does the following:
 
-`npm run dev` şunları yapar (sırayla, paralel):
-1. Tüm workspace'leri derler (`tsc`)
-2. Committee (:3004) başlar → Ministry (:3001) → Agent (:3002) → L2 (:3003)
-3. Gümrük müşaviri demo akışını (`customs-broker`) çalıştırır: belge hazırlar, ministry'den VC alır, agent'a iletir, L2 sonucunu loglar
+Compiles all workspaces (tsc)
+Committee (:3004) → Ministry (:3001) → Agent (:3002) → L2 (:3003)
+Runs the customs broker demo: prepares document, receives VC from ministry, forwards to agent, logs L2 result
+Ports:
 
-**Portlar:**
-- `3001` — Ministry / Bakanlık
-- `3002` — UBLP Agent / Nakliyeci
-- `3003` — L2 Verifier
-- `3004` — Committee / Kurul
+3001 — Ministry
+3002 — UBLP Agent / Carrier
+3003 — L2 Verifier
+3004 — Committee
+customs-broker does not open a port — it is a one-shot demo script. In production, this role is handled by the customs broker's own system.
 
-> `customs-broker` bir port açmaz — one-shot demo script'i. Üretimde bu rolü gümrük müşavirinin kendi sistemi üstlenir.
+Environment Variables
+All services run with zero config in development mode. For production:
 
----
+Ministry (ministry/.env)
+# Private key encryption — if unset, stored as plaintext (development only!)
+MINISTRY_KEY_PASSPHRASE=strong-passphrase-here
 
-## Ortam Değişkenleri
-
-Tüm servisler sıfır config ile çalışır (development modu). Production için:
-
-### Ministry (`ministry/.env`)
-```env
-# Private key şifrelemesi — ayarlanmazsa plaintext (sadece geliştirme!)
-MINISTRY_KEY_PASSPHRASE=guclu-sifre-buraya
-
-# Opsiyonel
+# Optional
 MINISTRY_DID=did:ublp:ministry
 COMMITTEE_URL=http://localhost:3004
-```
+Committee (committee/.env)
+# BLS private key encryption — if unset, stored as plaintext (development only!)
+COMMITTEE_KEY_PASSPHRASE=strong-passphrase-here
 
-### Committee (`committee/.env`)
-```env
-# BLS private key şifrelemesi — ayarlanmazsa plaintext (sadece geliştirme!)
-COMMITTEE_KEY_PASSPHRASE=guclu-sifre-buraya
-
-# Opsiyonel
+# Optional
 COMMITTEE_PORT=3004
-```
-
-### UBLP Agent (`ublp-agent/.env`)
-```env
-# Opsiyonel
+UBLP Agent (ublp-agent/.env)
+# Optional
 AGENT_DID=did:ublp:agent:default
 L2_VERIFIER_URL=http://localhost:3003
 COMMITTEE_URL=http://localhost:3004
-```
-
-### L2 Verifier (`l2-verifier-mock/.env`)
-```env
-# dev (varsayılan): mock-ecdsa-p256 kabul edilir
-# sp1: yalnızca sp1-groth16 / sp1-plonk kabul edilir
+L2 Verifier (l2-verifier-mock/.env)
+# dev (default): accepts mock-ecdsa-p256
+# sp1: accepts only sp1-groth16 / sp1-plonk
 PROOF_MODE=dev
 
-# Opsiyonel
+# Optional
 MINISTRY_URL=http://localhost:3001
 COMMITTEE_URL=http://localhost:3004
-```
-
-### Gümrük Müşaviri (`customs-broker/.env`)
-```env
-# Opsiyonel — varsayılanlar dev için çalışır
+Customs Broker (customs-broker/.env)
+# Optional — defaults work for development
 MINISTRY_URL=http://localhost:3001
 UBLP_AGENT_URL=http://localhost:3002
 
-# Belgeye gömülecek nakliyeci DID'i — Agent'ın AGENT_DID'i ile eşleşmeli
+# Carrier DID embedded in document — must match agent's AGENT_DID
 AGENT_DID=did:ublp:agent:default
-```
-
-### SP1 (Gerçek ZK için — opsiyonel)
-```env
+SP1 (For real ZK proving — optional)
 # Succinct Prover Network
-SP1_PROVER_NETWORK_KEY=<succinct-api-anahtari>
+SP1_PROVER_NETWORK_KEY=<succinct-api-key>
 SP1_PROVER_URL=https://rpc.succinct.xyz
 
-# sp1-circuit/ içinde "cargo prove build" sonrası üretilen ELF
+# ELF generated after "cargo prove build" in sp1-circuit/
 SP1_ELF_PATH=sp1-circuit/elf/ublp-verifier
-```
+If SP1 env is not set, the system automatically falls back to mock mode.
 
-> SP1 env ayarlanmazsa sistem otomatik olarak mock moda geçer.
-
----
-
-## API Referansı
-
-### Ministry — `POST /api/approve`
-```json
+API Reference
+Ministry — POST /api/approve
 {
   "documentId": "DOC-uuid",
   "holderDid": "did:ublp:agent:default",
-  "exporterName": "ACME Lojistik A.Ş.",
+  "exporterName": "ACME Logistics Ltd.",
   "..."
 }
-```
-Döner: `UBLPVerifiableCredential`
+Returns: UBLPVerifiableCredential
 
-### UBLP Agent — `POST /api/process`
-```json
+UBLP Agent — POST /api/process
 {
   "verifiableCredential": { "..." }
 }
-```
-Döner: `{ presentation: UBLPVerifiablePresentation, l2Result: L2SettleResponse }`
+Returns: { presentation: UBLPVerifiablePresentation, l2Result: L2SettleResponse }
 
-### L2 Verifier — `GET /api/records`
-Döner: Tüm `L2SettleRecord[]`
+L2 Verifier — GET /api/records
+Returns: L2SettleRecord[]
 
-### L2 Verifier — `POST /api/revoke-key`
-```json
+L2 Verifier — POST /api/revoke-key
 {
   "ministryPublicKey": "-----BEGIN PUBLIC KEY-----...",
   "compromisedAt": "2024-01-15T10:00:00.000Z"
 }
-```
-`compromisedAt` isteğe bağlı. Belirtilmezse o andan itibaren kabul edilmez; geçmiş kayıtlar etkilenmez.
+compromisedAt is optional. If omitted, the key is rejected from this point forward; past records are unaffected.
 
-### L2 Verifier — `POST /api/sync`
-Ministry ve Committee bilgilerini yeniler (servis yeniden başlarsa kullan).
+L2 Verifier — POST /api/sync
+Refreshes ministry and committee data (use if a service restarts).
 
----
-
-## ZK Circuit (SP1)
-
-```
+ZK Circuit (SP1)
 sp1-circuit/src/main.rs
-```
+Private inputs (not exposed to L2):
 
-**Private inputs (L2'ye açıklanmaz):**
-1. `ministry_signature` — P-256 ECDSA, 64 byte IEEE P1363
-2. `ministry_pub_key_raw` — uncompressed SEC1, 65 byte
-3. `document_hash` — SHA256("ublp-doc-v1:" + canonicalJson), 32 byte
-4. `document_id_hash` — 32 byte
-5. `holder_signature` — P-256 ECDSA, 64 byte — holder kimlik gizliliği
-6. `holder_pub_key_raw` — uncompressed SEC1, 65 byte
-7. `holder_did` — UTF-8 bytes
+ministry_signature — P-256 ECDSA, 64 byte IEEE P1363
+ministry_pub_key_raw — uncompressed SEC1, 65 byte
+document_hash — SHA256("ublp-doc-v1:" + canonicalJson), 32 byte
+document_id_hash — 32 byte
+holder_signature — P-256 ECDSA, 64 byte — holder privacy
+holder_pub_key_raw — uncompressed SEC1, 65 byte
+holder_did — UTF-8 bytes
+Public outputs (verified by L2):
 
-**Public outputs (L2 doğrular):**
-- `document_hash` — belge parmak izi
-- `ministry_pub_key_hash` — SHA256(ministry raw key)
-- `document_id_hash` — replay koruması
-- `holder_pub_key_hash` — holder kimlik kanıtı; ham key değil, hash'i
+document_hash — document fingerprint
+ministry_pub_key_hash — SHA256(ministry raw key)
+document_id_hash — replay protection
+holder_pub_key_hash — holder identity proof; hash only, not raw key
+Circuit build (requires Rust + SP1 toolchain):
 
-**Circuit derleme (Rust + SP1 toolchain gerekli):**
-```bash
 cd sp1-circuit
 cargo prove build
-```
+Security Model
+Risk	Protection
+Ministry monopoly	BLS t-of-n committee; 2/3 threshold
+Holder identity leak	Holder sig is ZK private input; L2 only sees holderPubKeyHash
+Document content leak	rawDocument excluded from VP; document content consumed inside circuit
+Replay attack	documentIdHash unique constraint on L2
+Key compromise	Timestamped revocation; only settledAt >= compromisedAt flagged SUSPICIOUS
+Proof downgrade	PROOF_MODE set server-side via L2 env; not client-controlled
+Key at rest	Ministry + Committee: AES-256-GCM + PBKDF2
+v0.2 Roadmap
+not done
+BLS threshold verify → inside SP1 circuit (single Groth16 verify on L2)
+not done
+groupKeyHash as dynamic public input (committee rotation without circuit rebuild)
+not done
+PostgreSQL + Redis (replace settled.json flat-file)
+not done
+Binary calldata format (ABI-encoded instead of W3C JSON — gas savings)
+not done
+SP1 proof recursion + EIP-4844 blob batching (10x throughput)
+not done
+Agent key at rest encryption
+not done
+mTLS / API key authentication between services
+License
+Apache 2.0 — Patent grant included. Commercial use unrestricted, no copyleft, no source disclosure required for modifications.
 
----
+Ecosystem: ekacin/UBLP
 
-## Güvenlik Modeli
-
-| Risk | Koruma |
-|------|--------|
-| Bakanlık tekel riski | BLS t-of-n kurul; 2/3 eşik |
-| Holder kimlik sızıntısı | Holder kimlik gizliliği: holder sig ZK private input; L2 yalnızca `holderPubKeyHash` görür |
-| Belge içerik sızıntısı | `rawDocument` VP'ye dahil edilmez; L2 ZK Proof + BLS imzasını doğrular — belge içeriği circuit içinde tüketilir, VP'yi okuyan taraf içeriğe erişemez |
-| Replay saldırısı | `documentIdHash` L2'de unique constraint |
-| Anahtar sızması | Zaman damgalı revocation; sadece `settledAt >= compromisedAt` SUSPICIOUS |
-| Proof downgrade | `PROOF_MODE` L2 env'den; client'tan değil |
-| Key at rest | Ministry + Committee: AES-256-GCM + PBKDF2 |
-
----
-
-## v0.2 Yol Haritası
-
-- [ ] BLS threshold verify → SP1 circuit içine (L2'de tek Groth16 verify)
-- [ ] `groupKeyHash` dynamic public input (kurul rotasyonu circuit rebuild gerektirmez)
-- [ ] PostgreSQL + Redis (settled.json flat-file → production DB)
-- [ ] Binary calldata formatı (W3C JSON yerine ABI-encoded — gas tasarrufu)
-- [ ] SP1 proof recursion + EIP-4844 blob batch (10x throughput)
-- [ ] Agent key at rest şifrelemesi
-- [ ] mTLS / API key servisler arası
-
----
-
-## Lisans
-
-Apache 2.0 — Patent güvenceli, enterprise-friendly. Ticari kullanım serbest, modifikasyonlar kaynak açma zorunluluğu yok. Patent troll koruması dahil.
-
----
-
-**Ekosistem:** [ekacin/UBLP](https://github.com/ekacin/UBLP)
-
-*Efe Kaan Açın — [acinefekaan@gmail.com](mailto:acinefekaan@gmail.com)*
+Efe Kaan Açın — acinefekaan@gmail.com
