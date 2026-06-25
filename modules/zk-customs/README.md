@@ -15,15 +15,13 @@ Gümrük belgelerini ZK kanıtı, BLS eşik imzası ve W3C Verifiable Credential
 
 ### Mevcut Gümrük Sisteminin Sorunları
 
-**Merkezi onay → tek yozlaşma noktası.** Bugün bir gümrük beyannamesi, tek bir müdürün "tamam" demesiyle geçer ya da geçmez. Bu kapı bekçisi yapısı, yetkili karar alma sürecini bir bireyin tercihine — ve dürüstlüğüne — indirger.
-
 **Memur rüşveti.** Gümrük idareleri, Transparency International raporlarında küresel ölçekte en yüksek rüşvet riskli kurumlar arasında gösterilmektedir. Nedeni yapısaldır: belge onayı elle yapılan bir muamele, açık bir audit trail yok, ret gerekçesi yazılı tutulmak zorunda değil. "Ücret" ödenirse süreç hızlanır, ödenmezse belge takılır. Nakliye süresindeki her gün ihracatçıya doğrudan maliyet olduğu için baskı mekanizması otomatik işler.
 
-**Bürokratik darboğaz.** Uzun imza zinciri, her adımda insan — gecikme, veri giriş hatası ve manipülasyon için birden fazla fırsat. Ortalama bir ithalat belgesi Türkiye'de 6–9 gün bekler; Dünya Bankası verilerine göre bu sürenin büyük bölümü fiilî gümrük işlemi değil, onay kuyruğudur.
+**Bürokratik darboğaz.** Uzun imza zinciri, her adımda insan — gecikme, veri giriş hatası ve manipülasyon için birden fazla fırsat. Dünya Bankası verilerine göre bu sürenin büyük bölümü fiilî gümrük işlemi değil, onay kuyruğudur.
 
-**Sahte belge ve kaçakçılık.** Tek imzacı modeli, belge içeriğinin değiştirilmesine karşı yapısal bir koruma sunmaz. "Elma" beyan edilip farklı bir ürün geçirilebilir; imzalanan belgeyle fiziksel yükün eşleşip eşleşmediğini sorgulayan bağımsız bir doğrulama katmanı yoktur. Gümrükte yakalanan kaçakçılık vakalarının önemli bir kısmında sahte beyanname ve usulsüz mühür kullanımı tespit edilmektedir.
+**Şeffaflık yokluğu.** Kim imzaladı? Hangi yetkiyle? Bu soruların cevabı çoğu zaman erişilemez. Denetim izi kâğıt ya da kapalı sistemde — üçüncü taraflar doğrulayamaz.
 
-**Şeffaflık yokluğu.** Neden reddedildi? Kim imzaladı? Hangi yetkiyle? Bu soruların cevabı çoğu zaman erişilemez. Denetim izi kâğıt ya da kapalı sistemde — üçüncü taraflar doğrulayamaz.
+**Güven mekanizması yanlış kurulu.** Mevcut sistemde güven, kurumların ve kişilerin niyetine dayanır. UBLP'nin önerisi farklı: güven kriptografik doğrulamaya ve değiştirilemez kayıtlara taşınır. Düşük riskli, belgeleri uyumlu sevkiyatlar otomatik geçer
 
 ### UBLP'nin Yaklaşımı
 
