@@ -1,40 +1,34 @@
 # UBLP — Universal Blockchain Logistics Protocol
 
-Lojistik süreçlerini uçtan uca kriptografik güvence altına alan çok modüllü açık protokol.
+A multi-module open protocol for end-to-end cryptographic security across logistics processes.
 
-Zero-Knowledge kanıtı, BLS eşik imzası ve W3C Verifiable Credentials kombinasyonu ile gümrük, taşımacılık ve tedarik zinciri belgelerini manipülasyona karşı matematiksel olarak korur.
-
----
-
-## Modüller
-
-| Modül | Dizin | Açıklama |
-|-------|-------|----------|
-| ZK Gümrük Doğrulama | [`modules/zk-customs`](./modules/zk-customs) | Gümrük belgesi ZK kanıtı, BLS kurul onayı, L2 settlement |
+Protects customs, freight, and supply chain documents against manipulation using Zero-Knowledge proofs, BLS threshold signatures, and W3C Verifiable Credentials.
 
 ---
 
-## Hızlı Başlangıç
+## Modules
 
-Her modül bağımsız çalışır. ZK Gümrük modülü için:
+| Module | Directory | Description |
+|--------|-----------|-------------|
+| ZK Customs Clearance | [`modules/zk-customs`](./modules/zk-customs) | Customs document ZK proof, BLS committee attestation, L2 settlement |
+
+---
+
+## Quick Start
+
+Each module runs independently. For the ZK Customs module:
 
 ```bash
 cd modules/zk-customs
 npm install
 npm run dev
-```
 
 ---
-
-## Katkıda Bulunanlar
-
+## Contributors
 | | |
 |---|---|
-| **Efe Kaan Açin** | Mimar, geliştirici |
-| **Claude (Anthropic)** | ZK devre tasarımı, kriptografi danışmanlığı, güvenlik denetimi |
-
+| **Efe Kaan Açın** | Architect, developer — [acinefekaan@gmail.com](mailto:acinefekaan@gmail.com) |
+| **Claude (Anthropic)** | ZK circuit design, cryptography advisory, security audit |
 ---
-
-## Lisans
-
-Apache 2.0 — bkz. [LICENSE](./LICENSE)
+## License
+Apache 2.0 — see [LICENSE](./LICENSE)
